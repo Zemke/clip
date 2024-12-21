@@ -23,7 +23,7 @@ function index(res) {
       }
       textarea {
         width: 80%;
-        height: 20rem;
+        height: 15rem;
         padding: 1rem;
         border: 1px solid #000;
       }
