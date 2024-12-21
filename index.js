@@ -163,7 +163,7 @@ http.createServer(async (req, res) => {
     });
     const write = () => {
       res.write('event: clip' + "\n")
-      res.write('data: ' + clip + "\n\n");
+      res.write('data: ' + clip.split("\n").join("\ndata: ") + "\n\n");
     };
     if (E.listenerCount('clip') === MAX) {
       E.removeListener('clip', E.listeners('clip')[0]);
