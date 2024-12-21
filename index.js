@@ -36,7 +36,7 @@ function index(res) {
       #files-list {
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-between;
+        justify-content: flex-start;
       }
       a.file {
         padding: .1rem .1rem 0 0;
@@ -76,38 +76,41 @@ function index(res) {
     <script>
       const TXT = document.getElementById("txt");
       window.addEventListener('load', function () {
-        const SSE = new EventSource("clip");
+        const SSE = new EventSource(window.location.pathname + "/clip");
         SSE.addEventListener("clip", e => TXT.value = e.data);
       });
       let T = null;
       TXT.addEventListener('input', ev => {
         T != null && clearTimeout(T);
         const body = ev.target.value;
-        T = setTimeout(() => fetch('clip', {method: 'POST', body}), 500);
+        T = setTimeout(
+          () => fetch(window.location.pathname  + '/clip', {method: 'POST', body}),
+          500);
       });
 
       async function fetchFiles() {
         const L = document.getElementById('files-list');
-        const res = await fetch('files', {method: 'GET'}).then(res => res.json())
-        res.forEach(f => {
-          if (document.getElementById(f) != null) {
-            return;
-          }
-          const wrap = document.createElement("a");
-          wrap.href = "file?kill=1&q=" + f;
-          wrap.target = "_blank";
-          wrap.id = f;
-          wrap.classList.add('file');
-          if ((/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i).test(f)) {
-            const img = document.createElement("img");
-            img.src = "file?q=" + f;
-            wrap.appendChild(img);
-          } else {
-            const n = document.createTextNode(f);
-            wrap.appendChild(n);
-          }
-          L.prepend(wrap);
-        });
+        (await fetch(window.location.pathname + '/files', {method: 'GET'})
+          .then(res => res.json()))
+          .forEach(f => {
+            if (document.getElementById(f) != null) {
+              return;
+            }
+            const wrap = document.createElement("a");
+            wrap.href = window.location.pathname + "/file?kill=1&q=" + f;
+            wrap.target = "_blank";
+            wrap.id = f;
+            wrap.classList.add('file');
+            if ((/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i).test(f)) {
+              const img = document.createElement("img");
+              img.src = window.location.pathname + "/file?q=" + f;
+              wrap.appendChild(img);
+            } else {
+              const n = document.createTextNode(f);
+              wrap.appendChild(n);
+            }
+            L.prepend(wrap);
+          });
       };
       fetchFiles();
 
@@ -116,7 +119,7 @@ function index(res) {
         F.disabled = true;
         const uploads = Array.from(e.target.files).map(async f =>
           await fetch(
-            'file',
+            window.location.pathname + '/file',
             {method: 'POST', body: f, headers: {'X-Filename': f.name}}
           ));
         await Promise.all(uploads);
@@ -141,10 +144,11 @@ function read(req) {
 }
 
 const E = new EventEmitter();
+E.setMaxListeners(0);
 var clip = "";
 
 http.createServer(async (req, res) => {
-  var U = url.parse(req.url, true);
+  const U = url.parse(req.url, true);
   if (req.method === "GET" && U.pathname === "/") {
     index(res);
     res.end();
@@ -191,5 +195,5 @@ http.createServer(async (req, res) => {
     res.writeHead(404);
     res.end();
   }
-}).listen(8080);
+}).listen(8000);
 
