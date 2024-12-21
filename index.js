@@ -21,8 +21,11 @@ function index(res) {
       .container {
         margin: 2rem 1rem;
       }
+      .textarea-wrapper {
+        display: flex;
+      }
       textarea {
-        width: 80%;
+        flex: 1;
         height: 15rem;
         padding: 1rem;
         border: 1px solid #000;
@@ -30,12 +33,15 @@ function index(res) {
       input[type=file] {
         margin: 1rem 0;
       }
+      #files-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
       a.file {
-        display: inline-block;
-        width: 5rem;
-        overflow: hidden;
-        margin: 1rem;
+        padding: .1rem .1rem 0 0;
         color: black;
+        max-width: 8rem;
         font-size: 1rem;
         word-wrap: anywhere;
         font-variant: all-petite-caps;
@@ -60,7 +66,9 @@ function index(res) {
   </head>
   <body>
     <div class="container">
-      <textarea id="txt"></textarea>
+      <div class="textarea-wrapper">
+        <textarea id="txt"></textarea>
+      </div>
       <input type="file" multiple id="files" name="files">
       <div id="files-list">
       </div>
