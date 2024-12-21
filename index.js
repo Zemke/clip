@@ -1,6 +1,6 @@
 const http = require('http');
 
-http.createServer((req, res) => {
+function index(res) {
   res.writeHead(200, {'content-type': 'text/html'});
   res.write(`
 <!DOCTYPE html>
@@ -47,6 +47,32 @@ http.createServer((req, res) => {
   </body>
 </html>
   `);
+}
+
+function read(req) {
+  return new Promise((resolve, reject) => {
+    let buff = '';
+    req.on('data', chunk => buff += chunk);
+    req.on('end', () => resolve(buff));
+    req.on('error', err => reject(err));
+    return buff;
+  });
+}
+
+var clip = "";
+
+http.createServer(async (req, res) => {
+  if (req.method === "GET" && req.url === "/") {
+    index(res);
+  } else if (req.method === "GET" && req.url === "/clip") {
+    res.writeHead(200, {'content-type': 'text/plain'});
+    res.write(clip);
+  } else if (req.method === "POST" && req.url === "/clip") {
+    clip = await read(req);
+    res.writeHead(200, {'content-type': 'text/plain'});
+  } else {
+    res.writeHead(404);
+  }
   res.end();
 }).listen(8080);
 
