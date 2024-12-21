@@ -18,17 +18,10 @@ function index(res) {
         margin: 0;
         padding: 0;
       }
-      @media (prefers-color-scheme: dark) {
-        html, body {
-          background: #1b1b1b;
-          color: #cdcdcd;
-        }
       }
       textarea {
         width: 90%;
         height: 20rem;
-        background: #343434;
-        color: #cdcdcd;
         padding: 1rem;
         margin: 1rem;
         border: 1px solid #000;
@@ -41,13 +34,26 @@ function index(res) {
         width: 5rem;
         overflow: hidden;
         margin: 1rem;
-        color: white;
+        color: black;
         font-size: 1rem;
         word-wrap: anywhere;
         font-variant: all-petite-caps;
       }
       a.file img {
         max-width: 100%;
+      }
+      @media (prefers-color-scheme: dark) {
+        html, body {
+          background: #1b1b1b;
+          color: #cdcdcd;
+        }
+        a.file {
+          color: white;
+        }
+        textarea {
+          color: #cdcdcd;
+          background: #343434;
+        }
       }
     </style>
   </head>
