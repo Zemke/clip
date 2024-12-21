@@ -18,16 +18,17 @@ function index(res) {
         margin: 0;
         padding: 0;
       }
+      .container {
+        margin: 2rem 1rem;
       }
       textarea {
-        width: 90%;
+        width: 80%;
         height: 20rem;
         padding: 1rem;
-        margin: 1rem;
         border: 1px solid #000;
       }
       input[type=file] {
-        margin: 1rem;
+        margin: 1rem 0;
       }
       a.file {
         display: inline-block;
@@ -58,9 +59,11 @@ function index(res) {
     </style>
   </head>
   <body>
-    <textarea id="txt"></textarea>
-    <input type="file" multiple id="files" name="files">
-    <div id="files-list">
+    <div class="container">
+      <textarea id="txt"></textarea>
+      <input type="file" multiple id="files" name="files">
+      <div id="files-list">
+      </div>
     </div>
     <script>
       const TXT = document.getElementById("txt");
