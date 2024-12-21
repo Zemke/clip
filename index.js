@@ -145,12 +145,22 @@ function read(req) {
   });
 }
 
+const DAYS_7 = 1000 * 60 * 60 * 24 * 7;
+
 const E = new EventEmitter();
 const MAX = 5;
 E.setMaxListeners(MAX);
 var clip = "";
 
 http.createServer(async (req, res) => {
+  const now = Date.now();
+  if (now % 20 === 0) {
+    fs.readdirSync(path.resolve('files'))
+      .filter(f => !f.startsWith('.'))
+      .map(f => path.resolve('files', f))
+      .filter(f => now > fs.statSync(path.resolve('files', f)).ctimeMs + DAYS_7)
+      .forEach(f => fs.unlinkSync(f));
+  }
   const U = url.parse(req.url, true);
   if (req.method === "GET" && U.pathname === "/") {
     index(res);
@@ -190,9 +200,6 @@ http.createServer(async (req, res) => {
     try {
       res.write(fs.readFileSync(f));
       res.end();
-      if (U.query.kill === '1') {
-        setTimeout(() => fs.unlinkSync(f), 10_000);
-      }
     } catch {
       res.writeHead(404);
       res.end();
