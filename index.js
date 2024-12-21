@@ -35,14 +35,18 @@ function index(res) {
   <body>
     <textarea id="txt"></textarea>
     <script>
-      const txt = document.getElementById("txt");
-      console.log(txt);
+      const TXT = document.getElementById("txt");
+
+      window.addEventListener('load', function () {
+        const SSE = new EventSource("clip");
+        SSE.addEventListener("clip", e => TXT.value = e.data);
+      });
+
       let T = null;
-      txt.addEventListener('input', ev => {
+      TXT.addEventListener('input', ev => {
         T != null && clearTimeout(T);
-        T = setTimeout(async () => {
-          const res = await fetch('input', {method: 'POST'});
-        }, 2000);
+        const body = ev.target.value;
+        T = setTimeout(() => fetch('clip', {method: 'POST', body}), 500);
       });
     </script>
   </body>
@@ -60,8 +64,8 @@ function read(req) {
   });
 }
 
-var clip = "";
 const E = new EventEmitter();
+var clip = "";
 
 http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/") {
@@ -73,15 +77,16 @@ http.createServer(async (req, res) => {
       "Cache-Control": "no-cache",
       "Connection": "keep-alive"
     });
-    const emit = c => {
+    const write = () => {
       res.write('event: clip' + "\n")
-      res.write(c + "\n\n");
+      res.write('data: ' + clip + "\n\n");
     };
-    emit(clip);
-    E.on('clip', emit);
+    E.on('clip', write);
+    write();
   } else if (req.method === "POST" && req.url === "/clip") {
-    res.writeHead(200, {'content-type': 'text/plain'});
-    E.emit('clip', await read(req));
+    res.writeHead(200);
+    clip = await read(req);
+    E.emit('clip');
     res.end();
   } else {
     res.writeHead(404);
