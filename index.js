@@ -146,7 +146,8 @@ function read(req) {
 }
 
 const E = new EventEmitter();
-E.setMaxListeners(0);
+const MAX = 5;
+E.setMaxListeners(MAX);
 var clip = "";
 
 http.createServer(async (req, res) => {
@@ -164,7 +165,10 @@ http.createServer(async (req, res) => {
       res.write('event: clip' + "\n")
       res.write('data: ' + clip + "\n\n");
     };
-    E.on('clip', write);
+    if (E.listenerCount('clip') === MAX) {
+      E.removeListener('clip', E.listeners('clip')[0]);
+    }
+    E.addListener('clip', write);
     write();
   } else if (req.method === "POST" && U.pathname === "/clip") {
     res.writeHead(200);
