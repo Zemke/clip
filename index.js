@@ -36,11 +36,26 @@ function index(res) {
       input[type=file] {
         margin: 1rem;
       }
+      a.file {
+        display: inline-block;
+        width: 5rem;
+        overflow: hidden;
+        margin: 1rem;
+        color: white;
+        font-size: 1rem;
+        word-wrap: anywhere;
+        font-variant: all-petite-caps;
+      }
+      a.file img {
+        max-width: 100%;
+      }
     </style>
   </head>
   <body>
     <textarea id="txt"></textarea>
     <input type="file" multiple id="files" name="files">
+    <div id="files-list">
+    </div>
     <script>
       const TXT = document.getElementById("txt");
       window.addEventListener('load', function () {
@@ -54,6 +69,31 @@ function index(res) {
         T = setTimeout(() => fetch('clip', {method: 'POST', body}), 500);
       });
 
+      async function fetchFiles() {
+        const L = document.getElementById('files-list');
+        const res = await fetch('files', {method: 'GET'}).then(res => res.json())
+        res.forEach(f => {
+          if (document.getElementById(f) != null) {
+            return;
+          }
+          const wrap = document.createElement("a");
+          wrap.href = "file?kill=1&q=" + f;
+          wrap.target = "_blank";
+          wrap.id = f;
+          wrap.classList.add('file');
+          if ((/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i).test(f)) {
+            const img = document.createElement("img");
+            img.src = "file?q=" + f;
+            wrap.appendChild(img);
+          } else {
+            const n = document.createTextNode(f);
+            wrap.appendChild(n);
+          }
+          L.prepend(wrap);
+        });
+      };
+      fetchFiles();
+
       const F = document.getElementById('files')
       F.addEventListener('change', async e => {
         F.disabled = true;
@@ -65,6 +105,7 @@ function index(res) {
         await Promise.all(uploads);
         F.value = null;
         F.disabled = false;
+        fetchFiles();
       });
     </script>
   </body>
@@ -112,6 +153,23 @@ http.createServer(async (req, res) => {
     const file = fs.createWriteStream(p);
     req.pipe(file);
     req.on('end', () => res.end());
+  } else if (req.method === "GET" && U.pathname === "/files") {
+    res.writeHead(200, {'content-type': 'application/json'});
+    const filesList = fs.readdirSync(path.resolve('files')).filter(f => !f.startsWith('.'));
+    res.write(JSON.stringify(filesList));
+    res.end();
+  } else if (req.method === "GET" && U.pathname === "/file") {
+    const f = path.resolve('files', U.query.q);
+    try {
+      res.write(fs.readFileSync(f));
+      res.end();
+      if (U.query.kill === '1') {
+        setTimeout(() => fs.unlinkSync(f), 10_000);
+      }
+    } catch {
+      res.writeHead(404);
+      res.end();
+    }
   } else {
     res.writeHead(404);
     res.end();
