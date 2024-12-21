@@ -2,6 +2,7 @@ const http = require('http');
 const EventEmitter = require("node:events");
 const fs = require('fs');
 const path = require('path');
+const url = require('url');
 
 function index(res) {
   res.writeHead(200, {'content-type': 'text/html'});
@@ -85,10 +86,11 @@ const E = new EventEmitter();
 var clip = "";
 
 http.createServer(async (req, res) => {
-  if (req.method === "GET" && req.url === "/") {
+  var U = url.parse(req.url, true);
+  if (req.method === "GET" && U.pathname === "/") {
     index(res);
     res.end();
-  } else if (req.method === "GET" && req.url === "/clip") {
+  } else if (req.method === "GET" && U.pathname === "/clip") {
     res.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
@@ -100,12 +102,12 @@ http.createServer(async (req, res) => {
     };
     E.on('clip', write);
     write();
-  } else if (req.method === "POST" && req.url === "/clip") {
+  } else if (req.method === "POST" && U.pathname === "/clip") {
     res.writeHead(200);
     clip = await read(req);
     E.emit('clip');
     res.end();
-  } else if (req.method === "POST" && req.url === "/file") {
+  } else if (req.method === "POST" && U.pathname === "/file") {
     const p = path.resolve('files', req.headers['x-filename']);
     const file = fs.createWriteStream(p);
     req.pipe(file);
