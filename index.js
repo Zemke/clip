@@ -115,6 +115,7 @@ function index(res) {
           });
       };
       fetchFiles();
+      setInterval(fetchFiles, 5000);
 
       const F = document.getElementById('files')
       F.addEventListener('change', async e => {
