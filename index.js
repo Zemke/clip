@@ -74,9 +74,11 @@ function index(res) {
       </div>
     </div>
     <script>
+      const U = window.location.href.replace(/\\/$/, "");
+
       const TXT = document.getElementById("txt");
       window.addEventListener('load', function () {
-        const SSE = new EventSource(window.location.pathname + "/clip");
+        const SSE = new EventSource(U + "/clip");
         SSE.addEventListener("clip", e => TXT.value = e.data);
       });
       let T = null;
@@ -84,26 +86,26 @@ function index(res) {
         T != null && clearTimeout(T);
         const body = ev.target.value;
         T = setTimeout(
-          () => fetch(window.location.pathname  + '/clip', {method: 'POST', body}),
+          () => fetch(U  + '/clip', {method: 'POST', body}),
           500);
       });
 
       async function fetchFiles() {
         const L = document.getElementById('files-list');
-        (await fetch(window.location.pathname + '/files', {method: 'GET'})
+        (await fetch(U + '/files', {method: 'GET'})
           .then(res => res.json()))
           .forEach(f => {
             if (document.getElementById(f) != null) {
               return;
             }
             const wrap = document.createElement("a");
-            wrap.href = window.location.pathname + "/file?kill=1&q=" + f;
+            wrap.href = U + "/file?kill=1&q=" + f;
             wrap.target = "_blank";
             wrap.id = f;
             wrap.classList.add('file');
             if ((/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i).test(f)) {
               const img = document.createElement("img");
-              img.src = window.location.pathname + "/file?q=" + f;
+              img.src = U + "/file?q=" + f;
               wrap.appendChild(img);
             } else {
               const n = document.createTextNode(f);
@@ -119,7 +121,7 @@ function index(res) {
         F.disabled = true;
         const uploads = Array.from(e.target.files).map(async f =>
           await fetch(
-            window.location.pathname + '/file',
+            U + '/file',
             {method: 'POST', body: f, headers: {'X-Filename': f.name}}
           ));
         await Promise.all(uploads);
