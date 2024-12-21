@@ -99,7 +99,7 @@ function index(res) {
               return;
             }
             const wrap = document.createElement("a");
-            wrap.href = U + "/file?kill=1&q=" + f;
+            wrap.href = U + "/file?q=" + f;
             wrap.target = "_blank";
             wrap.id = f;
             wrap.classList.add('file');
