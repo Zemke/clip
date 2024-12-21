@@ -1,4 +1,5 @@
 const http = require('http');
+const EventEmitter = require("node:events");
 
 function index(res) {
   res.writeHead(200, {'content-type': 'text/html'});
@@ -60,20 +61,32 @@ function read(req) {
 }
 
 var clip = "";
+const E = new EventEmitter();
 
 http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/") {
     index(res);
+    res.end();
   } else if (req.method === "GET" && req.url === "/clip") {
-    res.writeHead(200, {'content-type': 'text/plain'});
-    res.write(clip);
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive"
+    });
+    const emit = c => {
+      res.write('event: clip' + "\n")
+      res.write(c + "\n\n");
+    };
+    emit(clip);
+    E.on('clip', emit);
   } else if (req.method === "POST" && req.url === "/clip") {
-    clip = await read(req);
     res.writeHead(200, {'content-type': 'text/plain'});
+    E.emit('clip', await read(req));
+    res.end();
   } else {
     res.writeHead(404);
+    res.end();
   }
-  res.end();
 }).listen(8080);
 
 
