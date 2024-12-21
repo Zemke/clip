@@ -1,5 +1,7 @@
 const http = require('http');
 const EventEmitter = require("node:events");
+const fs = require('fs');
+const path = require('path');
 
 function index(res) {
   res.writeHead(200, {'content-type': 'text/html'});
@@ -30,23 +32,38 @@ function index(res) {
         margin: 1rem;
         border: 1px solid #000;
       }
+      input[type=file] {
+        margin: 1rem;
+      }
     </style>
   </head>
   <body>
     <textarea id="txt"></textarea>
+    <input type="file" multiple id="files" name="files">
     <script>
       const TXT = document.getElementById("txt");
-
       window.addEventListener('load', function () {
         const SSE = new EventSource("clip");
         SSE.addEventListener("clip", e => TXT.value = e.data);
       });
-
       let T = null;
       TXT.addEventListener('input', ev => {
         T != null && clearTimeout(T);
         const body = ev.target.value;
         T = setTimeout(() => fetch('clip', {method: 'POST', body}), 500);
+      });
+
+      const F = document.getElementById('files')
+      F.addEventListener('change', async e => {
+        F.disabled = true;
+        const uploads = Array.from(e.target.files).map(async f =>
+          await fetch(
+            'file',
+            {method: 'POST', body: f, headers: {'X-Filename': f.name}}
+          ));
+        await Promise.all(uploads);
+        F.value = null;
+        F.disabled = false;
       });
     </script>
   </body>
@@ -88,10 +105,14 @@ http.createServer(async (req, res) => {
     clip = await read(req);
     E.emit('clip');
     res.end();
+  } else if (req.method === "POST" && req.url === "/file") {
+    const p = path.resolve('files', req.headers['x-filename']);
+    const file = fs.createWriteStream(p);
+    req.pipe(file);
+    req.on('end', () => res.end());
   } else {
     res.writeHead(404);
     res.end();
   }
 }).listen(8080);
-
 
