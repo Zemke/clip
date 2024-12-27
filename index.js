@@ -199,8 +199,8 @@ http.createServer(async (req, res) => {
   } else if (req.method === "GET" && U.pathname === "/file") {
     const f = path.resolve('files', U.query.q);
     try {
-      res.writeHead(200, {'Content-Disposition': `inline; filename="${f}"`});
       res.write(fs.readFileSync(f));
+      res.writeHead(200, {'Content-Disposition': `inline; filename="${f}"`});
       res.end();
     } catch {
       res.writeHead(404);
