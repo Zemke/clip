@@ -197,10 +197,10 @@ http.createServer(async (req, res) => {
     res.write(JSON.stringify(filesList));
     res.end();
   } else if (req.method === "GET" && U.pathname === "/file") {
-    const f = path.resolve('files', U.query.q);
     try {
-      res.write(fs.readFileSync(f));
-      res.writeHead(200, {'Content-Disposition': `inline; filename="${f}"`});
+      const f = fs.readFileSync(path.resolve('files', U.query.q))
+      res.writeHead(200, {'Content-Disposition': `inline; filename="${U.query.q}"`});
+      res.write(f);
       res.end();
     } catch {
       res.writeHead(404);
